@@ -15,7 +15,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # --- KEMBALI MENGGUNAKAN CONDA (Sesuai Kode Awal) ---
+    # --- HAPUS STEP "Set up Python" ---
+    # Kita langsung gunakan Conda saja agar tidak bentrok
+
     - name: Set up Conda Environment
       uses: conda-incubator/setup-miniconda@v3
       with:
@@ -24,15 +26,14 @@ jobs:
         python-version: 3.10
         auto-activate-base: false
 
-    # --- BAGIAN INI SAYA HAPUS KARENA SEBELUMNYA SALAH (pip baca yaml) ---
-    # Setup-miniconda di atas sudah otomatis menginstall dependensi dari conda.yaml
-    # Jadi kita tidak perlu langkah install manual lagi.
-
     - name: Run MLflow Project Training
-      shell: bash -l {0}  # Wajib pakai ini agar environment Conda aktif
+      shell: bash -l {0}   # Menggunakan shell login agar Conda aktif
       run: |
+        # FIX PENTING: Set Absolute Path untuk Tracking URI
+        # Ini mencegah error "Run ID not found" saat script berjalan
+        export MLFLOW_TRACKING_URI=file://$(pwd)/mlruns
+        
         # Jalankan MLflow
-        # MLflow akan mendeteksi environment conda yang aktif
         mlflow run MLProject/ 
 
     - name: Upload MLflow Tracking Artifacts
