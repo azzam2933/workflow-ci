@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'MLProject/**'
+      - 'MLProject/**' 
 
 jobs:
   train-model:
     runs-on: ubuntu-latest
     
-    # 1. Menambahkan Matrix Strategy (Perbaikan Umum CI)
+    # Menambahkan matrix strategy untuk memastikan python-version valid
     strategy:
       matrix:
         python-version: [ '3.10' ] 
@@ -20,7 +20,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2. Setup Python sebelum Conda
+    # 1. Setup Python sebelum Conda (Best Practice)
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -33,18 +33,16 @@ jobs:
         environment-file: MLProject/conda.yaml
         python-version: ${{ matrix.python-version }}
         auto-activate-base: false
-        # 3. Menambahkan 'mamba' sebagai tool yang disukai
+        # 2. Memaksa penggunaan 'mamba' untuk stabilitas di CI/CD
         mamba-version: 'latest' 
         use-mamba: true 
 
-    # --- Hapus langkah 'Install dependencies (optional, jika Conda gagal)' --- 
-    # Karena sudah diurus oleh setup-miniconda
+    # --- Menghapus langkah instalasi redundan ---
 
     - name: Run MLflow Project Training
       shell: bash
       run: |
         conda activate diabetes_ml_env
-        # Pastikan MLflow terinstal dan jalankan project
         mlflow run MLProject/ -P use_conda=False
 
     - name: Upload MLflow Tracking Artifacts
