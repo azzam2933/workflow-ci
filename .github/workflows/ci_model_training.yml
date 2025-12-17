@@ -4,45 +4,58 @@ on:
   push:
     branches:
       - main
+    # Hanya jalankan jika ada perubahan pada folder yang relevan
     paths:
-      - 'MLProject/**' # Hanya jalankan jika ada perubahan pada folder MLProject
+      - 'MLProject/**' 
 
 jobs:
   train-model:
     runs-on: ubuntu-latest
+    
+    # Menambahkan matrix strategy untuk memastikan python-version valid (Solusi masalah sebelumnya)
+    strategy:
+      matrix:
+        python-version: [ '3.10' ] # Gunakan format string tunggal yang benar
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # --- PERBAIKAN: Menggunakan Setup Python sebelum Conda ---
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        
     - name: Set up Conda Environment
-      # Menggunakan action setup-conda adalah cara termudah untuk lingkungan ML
+      # Menggunakan action setup-miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: diabetes_ml_env
-        environment-file: MLProject/conda.yaml
-        python-version: 3.10
+        # Perhatikan: Sesuaikan path jika conda.yaml Anda bukan di 'MLProject/conda.yaml'
+        environment-file: MLProject/conda.yaml 
+        python-version: ${{ matrix.python-version }}
         auto-activate-base: false
 
-    - name: Install dependencies (optional, jika Conda gagal)
-      # Langkah cadangan untuk menginstal dependensi
-      shell: bash
-      run: |
-        conda activate diabetes_ml_env
-        pip install -r MLProject/conda.yaml --ignore-installed
+    # --- PERBAIKAN: Menghapus Langkah Instalasi Redundan (Optional Install) ---
+    # Jika environment-file sudah digunakan di setup-miniconda, 
+    # Conda sudah akan menginstal dependensi. Langkah ini sering redundan.
 
     - name: Run MLflow Project Training
       shell: bash
+      # Memastikan lingkungan Conda diaktifkan sebelum menjalankan MLflow
       run: |
         conda activate diabetes_ml_env
-        # Menjalankan project MLflow yang akan menjalankan modelling.py
+        # Menjalankan project MLflow. use_conda=False berarti tidak membuat 
+        # environment baru saat run, karena kita sudah membuat environment di atas.
         mlflow run MLProject/ -P use_conda=False
 
     # Langkah Kriteria Skilled: Menyimpan Artefak MLflow Tracking
+    # Ini penting untuk memverifikasi Run ID dan artefak dari GitHub Actions
     - name: Upload MLflow Tracking Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-tracking-data
-        # MLflow secara default membuat folder mlruns di root project (Workflow-CI)
         path: mlruns/
         retention-days: 5
         
