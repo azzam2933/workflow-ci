@@ -11,27 +11,22 @@ jobs:
   train-model:
     runs-on: ubuntu-latest
     
-    # Kriteria 3: Menggunakan matrix strategy untuk definisi versi Python yang bersih
-    strategy:
-      matrix:
-        python-version: ["3.10"] # Menggunakan format string untuk menghindari typo 3.1,=3.10.*
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Langkah krusial untuk stabilitas sebelum menjalankan Conda
-      - name: Set up Python ${{ matrix.python-version }}
+      # Kriteria 3: Menggunakan versi Python 3.10 secara eksplisit tanpa matrix strategy
+      - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
 
       - name: Set up Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: diabetes_ml_env
           environment-file: MLProject/conda.yaml
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
           auto-activate-base: false
           # Menggunakan mamba untuk penyelesaian dependensi yang lebih cepat dan stabil
           mamba-version: "*"
@@ -43,9 +38,10 @@ jobs:
           # Memastikan conda terinisialisasi di shell bash
           source /usr/share/miniconda/etc/profile.d/conda.sh
           conda activate diabetes_ml_env
+          
           # Kriteria 3: Menjalankan MLflow Project
-          # use_conda=False karena kita sudah menyiapkan environment di langkah sebelumnya
-          mlflow run MLProject/ -P use_conda=False 
+          # Menggunakan --env-manager=local karena environment sudah disiapkan oleh setup-miniconda
+          mlflow run MLProject/ --env-manager=local
 
       # Kriteria 3: Menyimpan hasil training sebagai Artifact di GitHub Actions
       - name: Upload MLflow Tracking Artifacts
