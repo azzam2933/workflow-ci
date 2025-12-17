@@ -5,17 +5,18 @@ on:
     branches:
       - main
     paths:
-      - 'MLProject/**' # Hanya jalankan jika ada perubahan pada folder MLProject
+      - 'MLProject/'
 
 jobs:
   train-model:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # --- KEMBALI MENGGUNAKAN CONDA (Sesuai Kode Awal) ---
     - name: Set up Conda Environment
-      # Menggunakan action setup-conda adalah cara termudah untuk lingkungan ML
       uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: diabetes_ml_env
@@ -23,28 +24,23 @@ jobs:
         python-version: 3.10
         auto-activate-base: false
 
-    - name: Install dependencies (optional, jika Conda gagal)
-      # Langkah cadangan untuk menginstal dependensi
-      shell: bash
-      run: |
-        conda activate diabetes_ml_env
-        pip install -r MLProject/conda.yaml --ignore-installed
+    # --- BAGIAN INI SAYA HAPUS KARENA SEBELUMNYA SALAH (pip baca yaml) ---
+    # Setup-miniconda di atas sudah otomatis menginstall dependensi dari conda.yaml
+    # Jadi kita tidak perlu langkah install manual lagi.
 
     - name: Run MLflow Project Training
-      shell: bash
+      shell: bash -l {0}  # Wajib pakai ini agar environment Conda aktif
       run: |
-        conda activate diabetes_ml_env
-        # Menjalankan project MLflow yang akan menjalankan modelling.py
-        mlflow run MLProject/ -P use_conda=False
+        # Jalankan MLflow
+        # MLflow akan mendeteksi environment conda yang aktif
+        mlflow run MLProject/ 
 
-    # Langkah Kriteria Skilled: Menyimpan Artefak MLflow Tracking
     - name: Upload MLflow Tracking Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-tracking-data
-        # MLflow secara default membuat folder mlruns di root project (Workflow-CI)
         path: mlruns/
         retention-days: 5
-        
+
     - name: Success Message
       run: echo "Model training and artifact upload complete!"
