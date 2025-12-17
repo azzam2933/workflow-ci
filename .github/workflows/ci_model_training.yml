@@ -11,7 +11,6 @@ jobs:
   train-model:
     runs-on: ubuntu-latest
     
-    # Menambahkan matrix strategy untuk memastikan python-version valid
     strategy:
       matrix:
         python-version: [ '3.10' ] 
@@ -20,30 +19,25 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 1. Setup Python sebelum Conda (Best Practice)
+    # --- BARU: Ganti setup-miniconda dengan setup-python dan Pip install ---
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         
-    - name: Set up Conda Environment
-      uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: diabetes_ml_env
-        environment-file: MLProject/conda.yaml
-        python-version: ${{ matrix.python-version }}
-        auto-activate-base: false
-        # 2. Memaksa penggunaan 'mamba' untuk stabilitas di CI/CD
-        mamba-version: 'latest' 
-        use-mamba: true 
-
-    # --- Menghapus langkah instalasi redundan ---
-
-    - name: Run MLflow Project Training
-      shell: bash
+    - name: Install Dependencies
       run: |
-        conda activate diabetes_ml_env
-        mlflow run MLProject/ -P use_conda=False
+        # Menginstal semua paket menggunakan Pip dari file yang baru dibuat
+        pip install -r MLProject/requirements.txt
+        
+    # --- Perubahan di Langkah Run MLflow Project ---
+    # Kita tidak lagi perlu mengaktifkan Conda environment
+    - name: Run MLflow Project Training
+      run: |
+        # Karena dependensi sudah diinstal di virtual environment GitHub Actions
+        mlflow run MLProject/ -P use_conda=False 
+        # Catatan: Kita mempertahankan -P use_conda=False untuk memastikan 
+        # MLflow tidak mencoba membuat lingkungan Conda lagi saat runtime.
 
     - name: Upload MLflow Tracking Artifacts
       uses: actions/upload-artifact@v4
