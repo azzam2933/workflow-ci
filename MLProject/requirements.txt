@@ -1,0 +1,7 @@
+pandas
+scikit-learn
+numpy
+joblib
+mlflow>=2.12.2
+matplotlib
+pyyaml
