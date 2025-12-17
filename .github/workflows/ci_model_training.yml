@@ -33,7 +33,7 @@ jobs:
     - name: Run MLflow Project Training
       run: |
         # Tambahkan flag --env-manager=local agar MLflow tidak mencari Conda
-        mlflow run MLProject/ -P use_conda=False --env-manager=loca
+        mlflow run MLProject/ -P use_conda=False --env-manager=local
 
     - name: Upload MLflow Tracking Artifacts
       uses: actions/upload-artifact@v4
