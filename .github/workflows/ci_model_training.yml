@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "MLProject/**" # Hanya jalankan jika ada perubahan pada folder MLProject
+    
 
 jobs:
   train-model:
