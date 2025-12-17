@@ -4,43 +4,56 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "MLProject/**" # Hanya jalankan jika ada perubahan pada folder MLProject
 
 jobs:
   train-model:
     runs-on: ubuntu-latest
     
+    # Kriteria 3: Menggunakan matrix strategy untuk definisi versi Python yang bersih
+    strategy:
+      matrix:
+        python-version: ["3.10"] # Menggunakan format string untuk menghindari typo 3.1,=3.10.*
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # --- HAPUS STEP "Set up Python" ---
-    # SAYA SUDAH MENGHAPUS STEP 'setup-python' AGAR TIDAK BENTROK
-    # Kita langsung gunakan Conda saja.
+      # Langkah krusial untuk stabilitas sebelum menjalankan Conda
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Set up Conda Environment
-      uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: diabetes_ml_env
-        environment-file: MLProject/conda.yaml
-        python-version: 3.10
-        auto-activate-base: false
+      - name: Set up Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: diabetes_ml_env
+          environment-file: MLProject/conda.yaml
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+          # Menggunakan mamba untuk penyelesaian dependensi yang lebih cepat dan stabil
+          mamba-version: "*"
+          use-mamba: true
 
-    - name: Run MLflow Project Training
-      # Shell bash -l {0} wajib agar environment conda terdeteksi
-      shell: bash -l {0}   
-      run: |
-        # Fix untuk masalah "Run ID not found" (error sebelumnya)
-        export MLFLOW_TRACKING_URI=file://$(pwd)/mlruns
-        
-        # Jalankan training
-        mlflow run MLProject/ 
+      - name: Run MLflow Project Training
+        shell: bash
+        run: |
+          # Memastikan conda terinisialisasi di shell bash
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda activate diabetes_ml_env
+          # Kriteria 3: Menjalankan MLflow Project
+          # use_conda=False karena kita sudah menyiapkan environment di langkah sebelumnya
+          mlflow run MLProject/ -P use_conda=False 
 
-    - name: Upload MLflow Tracking Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: mlflow-tracking-data
-        path: mlruns/
-        retention-days: 5
+      # Kriteria 3: Menyimpan hasil training sebagai Artifact di GitHub Actions
+      - name: Upload MLflow Tracking Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-tracking-data
+          path: mlruns/ # Folder ini berisi bukti Kriteria 2 (Model Artifacts)
+          retention-days: 5
 
-    - name: Success Message
-      run: echo "Model training and artifact upload complete!"
+      - name: Success Message
+        run: echo "Model training and artifact upload complete!"
