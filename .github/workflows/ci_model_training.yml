@@ -16,7 +16,8 @@ jobs:
       uses: actions/checkout@v4
 
     # --- HAPUS STEP "Set up Python" ---
-    # Kita langsung gunakan Conda saja agar tidak bentrok
+    # SAYA SUDAH MENGHAPUS STEP 'setup-python' AGAR TIDAK BENTROK
+    # Kita langsung gunakan Conda saja.
 
     - name: Set up Conda Environment
       uses: conda-incubator/setup-miniconda@v3
@@ -27,13 +28,13 @@ jobs:
         auto-activate-base: false
 
     - name: Run MLflow Project Training
-      shell: bash -l {0}   # Menggunakan shell login agar Conda aktif
+      # Shell bash -l {0} wajib agar environment conda terdeteksi
+      shell: bash -l {0}   
       run: |
-        # FIX PENTING: Set Absolute Path untuk Tracking URI
-        # Ini mencegah error "Run ID not found" saat script berjalan
+        # Fix untuk masalah "Run ID not found" (error sebelumnya)
         export MLFLOW_TRACKING_URI=file://$(pwd)/mlruns
         
-        # Jalankan MLflow
+        # Jalankan training
         mlflow run MLProject/ 
 
     - name: Upload MLflow Tracking Artifacts
