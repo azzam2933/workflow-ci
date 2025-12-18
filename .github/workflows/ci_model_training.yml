@@ -34,12 +34,9 @@ jobs:
       - name: Run MLflow Project Training
         shell: bash
         run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate diabetes_ml_env
-          
-          # Jalankan skrip secara langsung untuk menghindari konflik Run ID
-          cd MLProject/
-          python modelling.py
+          # Pastikan Anda berada di direktori root atau arahkan ke direktori yang berisi file 'MLproject'
+          # Gunakan perintah mlflow run . untuk menjalankan project
+          mlflow run MLProject/ --experiment-name "Diabetes_Retraining"
 
       # Kriteria 3: Menyimpan hasil training sebagai Artifact di GitHub Actions
       - name: Upload MLflow Tracking Artifacts
