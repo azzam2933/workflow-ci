@@ -29,15 +29,14 @@ jobs:
           use-mamba: true
 
       - name: Run MLflow Project Training
-        # PENTING: Menggunakan shell login agar conda/mlflow terdeteksi di PATH
         shell: bash -l {0}
         run: |
-          # Instal mlflow di runner agar perintah 'mlflow' tersedia
+          # 1. Instal mlflow (sudah benar, tapi pastikan tetap ada)
           pip install mlflow
 
-          # Jalankan sebagai MLflow Project sesuai Kriteria 3
-          # Menggunakan --no-conda karena env sudah disiapkan oleh step sebelumnya
-          mlflow run MLProject/ --no-conda --experiment-name "Diabetes_Retraining"
+          # 2. Gunakan flag --env-manager local sebagai pengganti --no-conda
+          # Karena MLflow versi terbaru menggunakan --env-manager untuk mengatur environment
+          mlflow run MLProject/ --env-manager local --experiment-name "Diabetes_Retraining"
 
       - name: Upload MLflow Tracking Artifacts
         if: always()
