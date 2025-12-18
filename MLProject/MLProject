@@ -1,10 +1,7 @@
-name: diabetes-prediction-ci
+name: Diabetes_ML_Project
 
-# Definisikan lingkungan conda yang akan digunakan
 conda_env: conda.yaml
 
-# Definisikan perintah yang dapat dijalankan (Entry Points)
 entry_points:
-  # Ini adalah entry point default yang akan dipanggil untuk training
   main:
     command: "python modelling.py"
