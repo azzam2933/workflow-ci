@@ -13,6 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Kriteria 3: Menggunakan versi Python 3.10 secara eksplisit tanpa matrix strategy
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -25,26 +26,26 @@ jobs:
           environment-file: MLProject/conda.yaml
           python-version: "3.10"
           auto-activate-base: false
+          # Menggunakan mamba untuk penyelesaian dependensi yang lebih cepat dan stabil
           mamba-version: "*"
           use-mamba: true
 
       - name: Run MLflow Project Training
-        # PENTING: Menggunakan shell login agar path conda & mlflow terdeteksi
-        shell: bash -l {0}
+        shell: bash
         run: |
-          # Instal mlflow di runner agar perintah 'mlflow' tersedia
-          pip install mlflow
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda activate diabetes_ml_env
 
-          # Jalankan sebagai MLflow Project sesuai Kriteria 3
-          # Menggunakan --env-manager local karena environment sudah disiapkan oleh miniconda
-          mlflow run MLProject/ --env-manager local
+          # Jalankan skrip secara langsung untuk menghindari konflik Run ID
+          cd MLProject/
+          python modelling.py
 
+      # Kriteria 3: Menyimpan hasil training sebagai Artifact di GitHub Actions
       - name: Upload MLflow Tracking Artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mlflow-tracking-data
-          path: mlruns/
+          path: mlruns/  # Folder ini berisi bukti Kriteria 2 (Model Artifacts)
           retention-days: 5
 
       - name: Success Message
