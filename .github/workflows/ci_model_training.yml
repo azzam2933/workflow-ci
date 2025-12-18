@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-    
 
 jobs:
   train-model:
@@ -14,7 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Kriteria 3: Menggunakan versi Python 3.10 secara eksplisit tanpa matrix strategy
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -27,23 +25,26 @@ jobs:
           environment-file: MLProject/conda.yaml
           python-version: "3.10"
           auto-activate-base: false
-          # Menggunakan mamba untuk penyelesaian dependensi yang lebih cepat dan stabil
           mamba-version: "*"
           use-mamba: true
 
       - name: Run MLflow Project Training
-        shell: bash
+        # PENTING: Menggunakan shell login agar conda/mlflow terdeteksi di PATH
+        shell: bash -l {0}
         run: |
-          # Pastikan Anda berada di direktori root atau arahkan ke direktori yang berisi file 'MLproject'
-          # Gunakan perintah mlflow run . untuk menjalankan project
-          mlflow run MLProject/ --experiment-name "Diabetes_Retraining"
+          # Instal mlflow di runner agar perintah 'mlflow' tersedia
+          pip install mlflow
 
-      # Kriteria 3: Menyimpan hasil training sebagai Artifact di GitHub Actions
+          # Jalankan sebagai MLflow Project sesuai Kriteria 3
+          # Menggunakan --no-conda karena env sudah disiapkan oleh step sebelumnya
+          mlflow run MLProject/ --no-conda --experiment-name "Diabetes_Retraining"
+
       - name: Upload MLflow Tracking Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mlflow-tracking-data
-          path: mlruns/ # Folder ini berisi bukti Kriteria 2 (Model Artifacts)
+          path: mlruns/
           retention-days: 5
 
       - name: Success Message
