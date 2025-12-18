@@ -87,7 +87,8 @@ def tune_and_log_model(X_train_scaled, y_train, X_test_scaled, y_test, scaler):
     f1 = f1_score(y_test, y_pred, zero_division=0)
 
     # --- MANUAL LOGGING DENGAN MLFLOW ---
-    with mlflow.start_run(run_name="CI_Tuned_Logistic_Regression") as run:
+    # Tambahkan nested=True jika Anda ingin membuat run di dalam run (Kriteria MLflow Project)
+with mlflow.start_run(run_name="CI_Tuned_Logistic_Regression", nested=True) as run:
         
         # 1. Logging Parameter Terbaik
         mlflow.log_params(grid.best_params_)
