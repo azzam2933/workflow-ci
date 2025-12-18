@@ -31,13 +31,10 @@ jobs:
       - name: Run MLflow Project Training
         shell: bash -l {0}
         run: |
-          # 1. Instal mlflow (sudah benar, tapi pastikan tetap ada)
           pip install mlflow
-
-          # 2. Gunakan flag --env-manager local sebagai pengganti --no-conda
-          # Karena MLflow versi terbaru menggunakan --env-manager untuk mengatur environment
+          # Tambahkan CD ke direktori root agar tidak ada masalah path
           mlflow run MLProject/ --env-manager local --experiment-name "Diabetes_Retraining"
-
+          
       - name: Upload MLflow Tracking Artifacts
         if: always()
         uses: actions/upload-artifact@v4
