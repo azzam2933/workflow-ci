@@ -29,12 +29,16 @@ jobs:
           use-mamba: true
 
       - name: Run MLflow Project Training
+        # Menggunakan bash -l agar environment conda aktif sempurna
         shell: bash -l {0}
         run: |
+          # Instal mlflow agar command tersedia di runner
           pip install mlflow
-          # Tambahkan CD ke direktori root agar tidak ada masalah path
-          mlflow run MLProject/ --env-manager local --experiment-name "Diabetes_Retraining"
-          
+
+          # Jalankan sebagai MLflow Project sesuai Kriteria 3
+          # Gunakan --env-manager local karena environment sudah siap
+          mlflow run MLProject/ --env-manager local
+
       - name: Upload MLflow Tracking Artifacts
         if: always()
         uses: actions/upload-artifact@v4
