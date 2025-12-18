@@ -1,12 +1,10 @@
-name: Diabetes_Project
-entry_points:
-  main:
-    command: "python modelling.py"
+name: diabetes-prediction-ci
 
-name: MyMLflowProject
-
+# Definisikan lingkungan conda yang akan digunakan
 conda_env: conda.yaml
 
+# Definisikan perintah yang dapat dijalankan (Entry Points)
 entry_points:
+  # Ini adalah entry point default yang akan dipanggil untuk training
   main:
     command: "python modelling.py"
