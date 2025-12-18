@@ -1,4 +1,4 @@
-name: Diabetes_ML_Project
+name: MyMLflowProject
 
 conda_env: conda.yaml
 
